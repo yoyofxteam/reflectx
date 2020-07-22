@@ -1,4 +1,4 @@
-module yoyo-reflect
+module github.com/yoyofxteam/yoyo-reflect
 
 go 1.14
 
