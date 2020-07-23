@@ -17,6 +17,13 @@ func CreateInstance(objectType reflect.Type) interface{} {
 	return ins.Interface()
 }
 
+// CreateInstance create new instance by type
+func CreateInstancePtr(objectType reflect.Type) interface{} {
+	var ins reflect.Value
+	ins = reflect.New(objectType)
+	return ins
+}
+
 // GetCtorFuncOutTypeName get ctor function return type's name.
 func GetCtorFuncOutTypeName(ctorFunc interface{}) (string, reflect.Type) {
 	typeInfo, err := GetTypeInfo(ctorFunc)
