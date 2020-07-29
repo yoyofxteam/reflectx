@@ -8,7 +8,6 @@ import (
 // TypeInfo
 type TypeInfo struct {
 	Name                string                //TypeInfo Name
-	ValueType           reflect.Value         //TypeInfo value
 	Type                reflect.Type          //TypeInfo type
 	Kind                reflect.Kind          //TypeInfo Kind
 	IsPtr               bool                  //TypeInfo is Ptr of Kind
@@ -21,15 +20,15 @@ type TypeInfo struct {
 // GetTypeInfo: get TypeInfo from instance
 func GetTypeInfo(ctorFunc interface{}) (TypeInfo, error) {
 	ctorVal := reflect.ValueOf(ctorFunc)
-	return GetTypeInfoWithValueType(ctorVal, ctorVal.Type())
+	return GetTypeInfoWithValueType(ctorVal.Type())
 }
 
 // GetTypeInfoWithValueType: get TypeInfo by reflect value and type
-func GetTypeInfoWithValueType(ctorVal reflect.Value, ctorType reflect.Type) (TypeInfo, error) {
+func GetTypeInfoWithValueType(ctorType reflect.Type) (TypeInfo, error) {
 	var typeInfo TypeInfo
 	typeInfo.IsValidation = true
 	var errorInfo error = nil
-	typeInfo.Kind = ctorVal.Kind()
+	typeInfo.Kind = ctorType.Kind()
 	if typeInfo.Kind == reflect.Func {
 		typeInfo.IsValidation = false
 		if ctorType.NumOut() < 1 {
@@ -41,19 +40,14 @@ func GetTypeInfoWithValueType(ctorVal reflect.Value, ctorType reflect.Type) (Typ
 
 	} else if typeInfo.Kind == reflect.Struct || typeInfo.Kind == reflect.Ptr {
 		typeInfo.IsValidation = true
-		typeInfo.ValueType = ctorVal
 		typeInfo.Name, typeInfo.Type, typeInfo.IsPtr = getStructOrPtrType(ctorType)
 		if typeInfo.Kind == reflect.Ptr {
-			typeInfo.ValueType = typeInfo.ValueType.Elem()
-			typeInfo.Kind = typeInfo.ValueType.Kind()
+			typeInfo.Kind = typeInfo.Type.Kind()
 		}
 	} else {
 		errorInfo = errors.New("It's not ctor func or object instance !")
 	}
 
-	if ctorVal.CanSet() {
-		typeInfo.CanSet = true
-	}
 	if typeInfo.Kind != reflect.Func {
 		typeInfo.lazyLoadFields()
 		typeInfo.LazyLoadMethods()
@@ -118,13 +112,11 @@ func (typeInfo *TypeInfo) lazyLoadFields() {
 
 		for i := 0; i < fieldNum; i++ {
 			fieldT := typeInfo.Type.Field(i)
-			fieldV := typeInfo.ValueType.Field(i)
 			typeInfo.fieldInfoListCache[fieldT.Name] = FieldInfo{
-				Name:  fieldT.Name,
-				Type:  fieldT.Type,
-				Kind:  fieldT.Type.Kind(),
-				Tags:  fieldT.Tag,
-				Value: fieldV,
+				Name: fieldT.Name,
+				Type: fieldT.Type,
+				Kind: fieldT.Type.Kind(),
+				Tags: fieldT.Tag,
 			}
 		}
 	}
@@ -133,7 +125,7 @@ func (typeInfo *TypeInfo) lazyLoadFields() {
 //LazyLoadMethods: lazy load all methods of TypeInfo
 func (typeInfo *TypeInfo) LazyLoadMethods() {
 	if len(typeInfo.methodInfoListCache) == 0 {
-		methodList := GetObjectMethodInfoListWithValueType(typeInfo.Type, typeInfo.ValueType)
+		methodList := GetObjectMethodInfoListWithValueType(typeInfo.Type)
 		methodNum := len(methodList)
 		if methodNum > 0 {
 			typeInfo.methodInfoListCache = make(map[string]MethodInfo, methodNum)

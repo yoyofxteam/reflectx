@@ -7,7 +7,6 @@ import (
 // Method Info
 type MethodInfo struct {
 	Name           string          //Method Name
-	MethodInfoVal  reflect.Value   //method value
 	MethodInfoType reflect.Type    //method type
 	Parameters     []ParameterInfo //method's Parameters
 	OutType        reflect.Type    //function's return type.
@@ -15,24 +14,24 @@ type MethodInfo struct {
 
 // IsValid : method is valid
 func (method MethodInfo) IsValid() bool {
-	return method.MethodInfoVal.IsValid()
+	return true
 }
 
 // Invoke : invoke the method with interface params.
-func (method MethodInfo) Invoke(params ...interface{}) []interface{} {
+func (method MethodInfo) Invoke(instance interface{}, params ...interface{}) []interface{} {
 	paramsCount := len(method.Parameters)
 	paramsValues := make([]reflect.Value, paramsCount)
 	for idx := 0; idx < paramsCount; idx++ {
 		method.Parameters[idx].ParameterValue = reflect.ValueOf(params[idx])
 		paramsValues[idx] = method.Parameters[idx].ParameterValue
 	}
-
-	return method.InvokeWithValue(paramsValues...)
+	return method.InvokeWithValue(reflect.ValueOf(instance), paramsValues...)
 }
 
 // InvokeWithValue: invoke the method with value params.
-func (method MethodInfo) InvokeWithValue(paramsValues ...reflect.Value) []interface{} {
-	returns := method.MethodInfoVal.Call(paramsValues)
+func (method MethodInfo) InvokeWithValue(instance reflect.Value, paramsValues ...reflect.Value) []interface{} {
+	methodInfoVal := instance.MethodByName(method.Name)
+	returns := methodInfoVal.Call(paramsValues)
 	outNum := method.MethodInfoType.NumOut()
 	results := make([]interface{}, outNum)
 	if len(returns) > 0 {
@@ -45,5 +44,5 @@ func (method MethodInfo) InvokeWithValue(paramsValues ...reflect.Value) []interf
 
 // AsTypeInfo : convert method to TypeInfo
 func (method MethodInfo) AsTypeInfo() (TypeInfo, error) {
-	return GetTypeInfoWithValueType(method.MethodInfoVal, method.MethodInfoType)
+	return GetTypeInfoWithValueType(method.MethodInfoType)
 }

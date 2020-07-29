@@ -27,7 +27,7 @@ func (user *UserInfo) Say(hi string) {
 }
 
 func (user *UserInfo) Hello(a string, hi string) string {
-	return hi
+	return hi + a
 }
 
 type Person struct {
@@ -53,13 +53,13 @@ func Test_MethodCallerCall2(t *testing.T) {
 	utype := &UserInfo{}
 
 	methodInfo, _ := GetObjectMethodInfoByName(utype, "Hello")
-	results := methodInfo.Invoke("", "hello world!")
+	results := methodInfo.Invoke(utype, "yoyogo", "hello world! ")
 
 	fmt.Println()
 	fmt.Printf("Result: %s", results)
 	fmt.Println()
 
-	assert.Equal(t, results[0].(string), "hello world!")
+	assert.Equal(t, results[0].(string), "hello world! yoyogo")
 }
 
 func Test_RecCreateStruct(t *testing.T) {
@@ -91,15 +91,15 @@ func Test_ReflectStructFields(t *testing.T) {
 
 	ptype, _ := GetTypeInfo(p)
 	pf1 := ptype.GetFieldByName("Name")
-	assert.Equal(t, pf1.GetValue(), "Json")
+	assert.Equal(t, pf1.GetValue(p), "Json")
 	pf2 := ptype.GetFieldByName("Student")
-	assert.Equal(t, pf2.GetValue(), student)
-	typeInfo, _ := pf2.AsTypeInfo()
+	assert.Equal(t, pf2.GetValue(p), student)
 
-	typeInfo.GetFieldByName("Grade").SetValue(11)
+	typeInfo, _ := pf2.AsTypeInfo()
+	typeInfo.GetFieldByName("Grade").SetValue(student, 11)
 	assert.Equal(t, student.Grade, 11)
 	assert.Equal(t, typeInfo.HasMethods(), true)
-	sayRet := typeInfo.GetMethodByName("Say").Invoke("World!")[0].(string)
+	sayRet := typeInfo.GetMethodByName("Say").Invoke(student, "World!")[0].(string)
 	assert.Equal(t, sayRet, "Hello World!")
 
 }
