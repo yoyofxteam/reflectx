@@ -37,9 +37,11 @@ type Student struct {
 }
 
 func (typeInfo Student) Hello() string {
+	fmt.Println("hello ")
 	return "hello"
 }
 
 func (typeInfo Student) Say(hi string) string {
+	fmt.Println("Hello " + hi)
 	return "Hello " + hi
 }

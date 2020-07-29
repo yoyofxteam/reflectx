@@ -1,4 +1,4 @@
-package Reflect
+package reflectx
 
 import (
 	"reflect"
@@ -6,10 +6,10 @@ import (
 
 // Method Info
 type MethodInfo struct {
-	Name           string          //Method Name
-	MethodInfoType reflect.Type    //method type
-	Parameters     []ParameterInfo //method's Parameters
-	OutType        reflect.Type    //function's return type.
+	Name           string                //Method Name
+	MethodInfoType reflect.Type          //method type
+	Parameters     []MethodParameterInfo //method's Parameters
+	OutType        reflect.Type          //function's return type.
 }
 
 // IsValid : method is valid
@@ -22,8 +22,7 @@ func (method MethodInfo) Invoke(instance interface{}, params ...interface{}) []i
 	paramsCount := len(method.Parameters)
 	paramsValues := make([]reflect.Value, paramsCount)
 	for idx := 0; idx < paramsCount; idx++ {
-		method.Parameters[idx].ParameterValue = reflect.ValueOf(params[idx])
-		paramsValues[idx] = method.Parameters[idx].ParameterValue
+		paramsValues[idx] = reflect.ValueOf(params[idx])
 	}
 	return method.InvokeWithValue(reflect.ValueOf(instance), paramsValues...)
 }

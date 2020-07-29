@@ -1,10 +1,10 @@
-package Reflect
+package reflectx
 
 import (
 	"reflect"
 )
 
-// CreateInstance create new instance by type
+// Create new instance(interface{}) by type
 func CreateInstance(objectType reflect.Type) interface{} {
 	var ins reflect.Value
 
@@ -17,14 +17,14 @@ func CreateInstance(objectType reflect.Type) interface{} {
 	return ins.Interface()
 }
 
-// CreateInstance create new instance by type
+// Create new instance(Ptr) by type
 func CreateInstancePtr(objectType reflect.Type) interface{} {
 	var ins reflect.Value
 	ins = reflect.New(objectType)
 	return ins
 }
 
-// GetCtorFuncOutTypeName get ctor function return type's name.
+// Get ctor function return type's name and reflect.Type.
 func GetCtorFuncOutTypeName(ctorFunc interface{}) (string, reflect.Type) {
 	typeInfo, err := GetTypeInfo(ctorFunc)
 	if err != nil {
@@ -33,13 +33,13 @@ func GetCtorFuncOutTypeName(ctorFunc interface{}) (string, reflect.Type) {
 	return typeInfo.Name, typeInfo.Type
 }
 
-// getMethodInfo get method info
+// Get method info
 func getMethodInfo(method reflect.Method) MethodInfo {
 	methodInfo := MethodInfo{}
 	methodInfo.Name = method.Name
 	methodInfo.MethodInfoType = method.Type
 	paramsCount := method.Type.NumIn() - 1
-	methodInfo.Parameters = make([]ParameterInfo, paramsCount)
+	methodInfo.Parameters = make([]MethodParameterInfo, paramsCount)
 
 	for idx := 0; idx < paramsCount; idx++ {
 		methodInfo.Parameters[idx].ParameterType = methodInfo.MethodInfoType.In(idx)
@@ -52,11 +52,13 @@ func getMethodInfo(method reflect.Method) MethodInfo {
 	return methodInfo
 }
 
+// Get instance's method list
 func GetObjectMethodInfoList(object interface{}) []MethodInfo {
 	objectType := reflect.TypeOf(object)
 	return GetObjectMethodInfoListWithValueType(objectType)
 }
 
+// Get method list by reflect.Type
 func GetObjectMethodInfoListWithValueType(objectType reflect.Type) []MethodInfo {
 	methodCount := objectType.NumMethod()
 	methodInfos := make([]MethodInfo, methodCount)
@@ -67,11 +69,13 @@ func GetObjectMethodInfoListWithValueType(objectType reflect.Type) []MethodInfo 
 	return methodInfos
 }
 
+// Get Instance's MethodInfo By Method Name and reflect.Type
 func GetObjectMethodInfoByName(object interface{}, methodName string) (MethodInfo, bool) {
 	objType := reflect.TypeOf(object)
 	return GetObjectMethodInfoByNameWithType(objType, methodName)
 }
 
+// Get Instance's MethodInfo By Method Name and reflect.Type
 func GetObjectMethodInfoByNameWithType(objectType reflect.Type, methodName string) (MethodInfo, bool) {
 	var methodInfo MethodInfo
 	methodType, rbl := objectType.MethodByName(methodName)
@@ -79,4 +83,30 @@ func GetObjectMethodInfoByNameWithType(objectType reflect.Type, methodName strin
 		methodInfo = getMethodInfo(methodType)
 	}
 	return methodInfo, rbl
+}
+
+// Get final type, means the type is Ptr elem or else.
+func GetFinalType(outType reflect.Type) (reflect.Type, bool) {
+	var cType reflect.Type
+	isPtr := false
+	if outType.Kind() != reflect.Ptr {
+		cType = outType
+	} else {
+		isPtr = true
+		cType = outType.Elem()
+	}
+	return cType, isPtr
+}
+
+// Get final value, means the type is Ptr elem or else.
+func GetFinalValue(outValue reflect.Value) (reflect.Value, bool) {
+	var cValue reflect.Value
+	isPtr := false
+	if outValue.Kind() != reflect.Ptr {
+		cValue = outValue
+	} else {
+		isPtr = true
+		cValue = outValue.Elem()
+	}
+	return cValue, isPtr
 }

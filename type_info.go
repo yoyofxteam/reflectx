@@ -1,4 +1,4 @@
-package Reflect
+package reflectx
 
 import (
 	"errors"
@@ -36,12 +36,14 @@ func GetTypeInfoWithValueType(ctorType reflect.Type) (TypeInfo, error) {
 			return typeInfo, errorInfo
 		}
 		outType := ctorType.Out(0)
-		typeInfo.Name, typeInfo.Type, typeInfo.IsPtr = getStructOrPtrType(outType)
+		typeInfo.Type, typeInfo.IsPtr = GetFinalType(outType)
+		typeInfo.Name = typeInfo.Type.Name()
 
 	} else if typeInfo.Kind == reflect.Struct || typeInfo.Kind == reflect.Ptr {
 		typeInfo.IsValidation = true
-		typeInfo.Name, typeInfo.Type, typeInfo.IsPtr = getStructOrPtrType(ctorType)
-		if typeInfo.Kind == reflect.Ptr {
+		typeInfo.Type, typeInfo.IsPtr = GetFinalType(ctorType)
+		typeInfo.Name = typeInfo.Type.Name()
+		if typeInfo.IsPtr {
 			typeInfo.Kind = typeInfo.Type.Kind()
 		}
 	} else {
@@ -135,20 +137,4 @@ func (typeInfo *TypeInfo) LazyLoadMethods() {
 			}
 		}
 	}
-}
-
-// getStructOrPtrType: get Struct Or Ptr type (name , type , isPtr)
-func getStructOrPtrType(outType reflect.Type) (string, reflect.Type, bool) {
-	var name string
-	var cType reflect.Type
-	isPtr := false
-	if outType.Kind() != reflect.Ptr {
-		name = outType.Name()
-		cType = outType
-	} else {
-		isPtr = true
-		name = outType.Elem().Name()
-		cType = outType.Elem()
-	}
-	return name, cType, isPtr
 }

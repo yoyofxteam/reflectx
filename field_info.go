@@ -1,4 +1,4 @@
-package Reflect
+package reflectx
 
 import (
 	"errors"
