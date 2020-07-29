@@ -1,58 +1,17 @@
-package Reflect
+package test
 
 import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
+	"github.com/yoyofxteam/yoyo-reflect"
 	"strings"
 	"testing"
 )
 
-type UserController struct {
-}
-
-func NewUserController() *UserController {
-	return &UserController{}
-}
-
-type RequestBody struct {
-}
-
-type UserInfo struct {
-	Name string `json:"name" w1:"12"`
-	Age  int
-}
-
-func (user *UserInfo) Say(hi string) {
-	fmt.Print(hi)
-}
-
-func (user *UserInfo) Hello(a string, hi string) string {
-	return hi + a
-}
-
-type Person struct {
-	Name    string
-	Student *Student
-}
-
-type Student struct {
-	Name  string `json:"name"`
-	Age   int    `json:"age"`
-	Grade int    `json:"grade"`
-}
-
-func (typeInfo Student) Hello() string {
-	return "hello"
-}
-
-func (typeInfo Student) Say(hi string) string {
-	return "Hello " + hi
-}
-
 func Test_MethodCallerCall2(t *testing.T) {
 	utype := &UserInfo{}
 
-	methodInfo, _ := GetObjectMethodInfoByName(utype, "Hello")
+	methodInfo, _ := Reflect.GetObjectMethodInfoByName(utype, "Hello")
 	results := methodInfo.Invoke(utype, "yoyogo", "hello world! ")
 
 	fmt.Println()
@@ -66,14 +25,14 @@ func Test_RecCreateStruct(t *testing.T) {
 	//yourtype := reflect.TypeOf(Mvc.RequestBody{})
 	//dd := Reflect.CreateInstance(yourtype)
 	//_ = dd
-	typeInfo, _ := GetTypeInfo(RequestBody{})
+	typeInfo, _ := Reflect.GetTypeInfo(RequestBody{})
 	ins := typeInfo.CreateInstance()
 	assert.Equal(t, ins != nil, true)
 }
 
 func Test_GetCtorFuncTypeName(t *testing.T) {
 	ctorFunc := NewUserController
-	name, _ := GetCtorFuncOutTypeName(ctorFunc)
+	name, _ := Reflect.GetCtorFuncOutTypeName(ctorFunc)
 	name = strings.ToLower(name)
 	assert.Equal(t, name, "usercontroller")
 }
@@ -89,7 +48,7 @@ func Test_ReflectStructFields(t *testing.T) {
 		Student: student,
 	}
 
-	ptype, _ := GetTypeInfo(p)
+	ptype, _ := Reflect.GetTypeInfo(p)
 	pf1 := ptype.GetFieldByName("Name")
 	assert.Equal(t, pf1.GetValue(p), "Json")
 	pf2 := ptype.GetFieldByName("Student")
