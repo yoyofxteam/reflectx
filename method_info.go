@@ -19,10 +19,12 @@ func (method MethodInfo) IsValid() bool {
 
 // Invoke : invoke the method with interface params.
 func (method MethodInfo) Invoke(instance interface{}, params ...interface{}) []interface{} {
-	paramsCount := len(method.Parameters)
-	paramsValues := make([]reflect.Value, paramsCount)
+	paramsCount := len(params)
+	//paramsValues := make([]reflect.Value, paramsCount)
+	var paramsValues []reflect.Value
 	for idx := 0; idx < paramsCount; idx++ {
-		paramsValues[idx] = reflect.ValueOf(params[idx])
+		paramsValues = append(paramsValues, reflect.ValueOf(params[idx]))
+
 	}
 	return method.InvokeWithValue(reflect.ValueOf(instance), paramsValues...)
 }

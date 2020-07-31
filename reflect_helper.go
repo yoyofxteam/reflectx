@@ -38,12 +38,16 @@ func getMethodInfo(method reflect.Method) MethodInfo {
 	methodInfo := MethodInfo{}
 	methodInfo.Name = method.Name
 	methodInfo.MethodInfoType = method.Type
-	paramsCount := method.Type.NumIn() - 1
+	paramsCount := method.Type.NumIn()
 	methodInfo.Parameters = make([]MethodParameterInfo, paramsCount)
 
 	for idx := 0; idx < paramsCount; idx++ {
 		methodInfo.Parameters[idx].ParameterType = methodInfo.MethodInfoType.In(idx)
-		methodInfo.Parameters[idx].Name = methodInfo.Parameters[idx].ParameterType.Name()
+		parameterType := methodInfo.Parameters[idx].ParameterType
+		if parameterType.Kind() == reflect.Ptr {
+			parameterType = parameterType.Elem()
+		}
+		methodInfo.Parameters[idx].Name = parameterType.Name()
 	}
 	if methodInfo.MethodInfoType.NumOut() > 0 {
 		methodInfo.OutType = methodInfo.MethodInfoType.Out(0)
